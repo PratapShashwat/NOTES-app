@@ -1,0 +1,9 @@
+body { font-family: system-ui, sans-serif; background: #f4f4f5; margin: 0; padding: 20px; }
+.container { max-width: 800px; margin: 0 auto; }
+.card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+input, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+button { background: #3b82f6; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+button.delete { background: #ef4444; margin-left: 10px; }
+button.secondary { background: #6b7280; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.note-item { border-bottom: 1px solid #eee; padding: 10px 0; }
