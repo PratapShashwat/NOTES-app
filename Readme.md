@@ -104,7 +104,9 @@ Visit `http://localhost:5173` in your browser.
 
 ## 📸 Screenshots
 
-*(Optional: Add screenshots of your app here)*
+
+![Login Screen](./screenshots/login.png)
+![Dashboard](./screenshots/dashboard.png)
 
 -----
 
@@ -118,15 +120,3 @@ Visit `http://localhost:5173` in your browser.
 
 -----
 
-### How to add Screenshots (Bonus Tip)
-
-If you want to make the repo look amazing:
-1. Take a screenshot of your Login page and your Dashboard.
-2. Save them as `login.png` and `dashboard.png`.
-3. Upload them to your GitHub repo.
-4. Replace the line under **Screenshots** with:
-
-```markdown
-![Login Screen](./login.png)
-![Dashboard](./dashboard.png)
-```
