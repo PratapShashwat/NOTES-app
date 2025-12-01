@@ -6,7 +6,9 @@ const API_URL = "http://localhost:5000";
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [notes, setNotes] = useState([]);
-  const [form, setForm] = useState({ email: '', password: '' });
+  
+  const [form, setForm] = useState({ username: '', password: '' });
+  
   const [isRegistering, setIsRegistering] = useState(false);
   const [newNote, setNewNote] = useState({ title: '', content: '' });
   const [editId, setEditId] = useState(null);
@@ -23,7 +25,7 @@ function App() {
       const res = await axios.get(`${API_URL}/notes`, authHeader);
       setNotes(res.data);
     } catch (err) {
-      alert("Session expired");
+      // If token is invalid/expired, logout automatically
       logout();
     }
   };
@@ -74,17 +76,28 @@ function App() {
     localStorage.removeItem('token');
     setToken(null);
     setNotes([]);
+    setForm({ username: '', password: '' }); 
   };
 
-  // --- RENDER LOGIN/REGISTER ---
+  // RENDER LOGIN/REGISTER 
   if (!token) {
     return (
       <div className="container" style={{ marginTop: '50px', maxWidth: '400px' }}>
         <div className="card">
           <h2>{isRegistering ? "Sign Up" : "Login"}</h2>
           <form onSubmit={handleAuth}>
-            <input placeholder="Email" onChange={e => setForm({...form, email: e.target.value})} />
-            <input type="password" placeholder="Password" onChange={e => setForm({...form, password: e.target.value})} />
+            <input 
+              type="text"
+              placeholder="Username" 
+              value={form.username}
+              onChange={e => setForm({...form, username: e.target.value})} 
+            />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={form.password}
+              onChange={e => setForm({...form, password: e.target.value})} 
+            />
             <button type="submit" style={{width: '100%'}}>{isRegistering ? "Register" : "Login"}</button>
           </form>
           <p style={{textAlign: 'center', marginTop: '10px', cursor: 'pointer', color: 'blue'}} 
@@ -96,7 +109,7 @@ function App() {
     );
   }
 
-  // --- RENDER DASHBOARD ---
+  // RENDER DASHBOARD
   return (
     <div className="container">
       <div className="header">

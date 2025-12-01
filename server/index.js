@@ -9,14 +9,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- DATABASE CONNECTION ---
+//  DATABASE CONNECTION 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
-// --- MODELS ---
+//  USER AND NOTE SCHEMAS
+
 const UserSchema = new mongoose.Schema({
-    email: { type: String, required: true, unique: true },
+    username: { type: String, required: true, unique: true },
     password: { type: String, required: true }
 });
 const User = mongoose.model('User', UserSchema);
@@ -29,29 +30,37 @@ const NoteSchema = new mongoose.Schema({
 }, { timestamps: true });
 const Note = mongoose.model('Note', NoteSchema);
 
-// --- MIDDLEWARE (The Gatekeeper) ---
+//  MIDDLEWARE FOR AUTHENTICATION
 const authMiddleware = (req, res, next) => {
     const token = req.header('Authorization');
     if (!token) return res.status(401).json({ error: "Access Denied" });
 
     try {
         const verified = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = verified; // Attaches the user ID to the request
+        req.user = verified; 
         next();
     } catch (err) {
         res.status(400).json({ error: "Invalid Token" });
     }
 };
 
-// --- AUTH ROUTES ---
+//  AUTHORIZATION ROUTES 
+
 app.post('/register', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        // Hash password before saving
+       
+        const { username, password } = req.body;
+
+        if (!username) return res.status(400).json({ error: "Username is required" });
+        if (!password) return res.status(400).json({ error: "Password is required" });
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(400).json({ error: "Username already taken" });
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        const newUser = new User({ email, password: hashedPassword });
+        const newUser = new User({ username, password: hashedPassword });
         await newUser.save();
         res.status(201).json({ message: "User created" });
     } catch (err) {
@@ -61,30 +70,32 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        const { username, password } = req.body;
+
+        if (!username) return res.status(400).json({ error: "Username is required" });
+        if (!password) return res.status(400).json({ error: "Password is required" });
+
+        const user = await User.findOne({ username });
         if (!user) return res.status(400).json({ error: "User not found" });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-        // Create JWT Token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token, user: { id: user._id, email: user.email } });
+        
+        res.json({ token, user: { id: user._id, username: user.username } });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-// --- CRUD ROUTES (Protected) ---
+//  NOTES ROUTES 
 
-// 1. GET all notes for the logged-in user
 app.get('/notes', authMiddleware, async (req, res) => {
     const notes = await Note.find({ userId: req.user.id }).sort({ createdAt: -1 });
     res.json(notes);
 });
 
-// 2. CREATE a new note
 app.post('/notes', authMiddleware, async (req, res) => {
     const { title, content, tags } = req.body;
     const newNote = new Note({ userId: req.user.id, title, content, tags });
@@ -92,10 +103,8 @@ app.post('/notes', authMiddleware, async (req, res) => {
     res.json(newNote);
 });
 
-// 3. UPDATE a note
 app.put('/notes/:id', authMiddleware, async (req, res) => {
     const { title, content } = req.body;
-    // Ensure user owns the note before updating
     const updatedNote = await Note.findOneAndUpdate(
         { _id: req.params.id, userId: req.user.id }, 
         { title, content },
@@ -104,7 +113,6 @@ app.put('/notes/:id', authMiddleware, async (req, res) => {
     res.json(updatedNote);
 });
 
-// 4. DELETE a note
 app.delete('/notes/:id', authMiddleware, async (req, res) => {
     await Note.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
     res.json({ message: "Note deleted" });
