@@ -4,7 +4,6 @@ A full-stack secure application to manage personal notes. Built with MongoDB, Ex
 
 ![MERN Stack](https://img.shields.io/badge/MERN-Stack-green)
 ![Status](https://img.shields.io/badge/Status-Completed-success)
-![License](https://img.shields.io/badge/License-MIT-blue)
 
 ## 🚀 Overview
 
